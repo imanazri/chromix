@@ -1,0 +1,16 @@
+# Rust build output
+/target
+
+# Stray export artifacts produced by `chromix export`
+/colors.css
+/colors.json
+/tailwind.colors.js
+
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~

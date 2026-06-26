@@ -22,7 +22,6 @@ fn get_theme() -> Theme {
 }
 
 fn wordmark_colors(theme: Theme) -> [(u8, u8, u8); 5] {
-    // Gray sweep, brightest at the top fading to darker at the bottom.
     match theme {
         Theme::Dark => [
             (235, 235, 235),
@@ -54,7 +53,7 @@ fn body_colors(theme: Theme) -> (String, String, String, String, String) {
             "\x1b[38;2;80;80;80m".to_string(),    // subtle
             "\x1b[38;2;120;120;120m".to_string(), // dim
             "\x1b[38;2;175;175;175m".to_string(), // rule
-            "\x1b[38;2;30;30;30m".to_string(),     // syn_cmd
+            "\x1b[38;2;30;30;30m".to_string(),    // syn_cmd
             "\x1b[38;2;120;120;120m".to_string(), // syn_digit
         ),
     }
@@ -72,8 +71,6 @@ fn is_hex_value(word: &str) -> bool {
     matches!(inner.len(), 3 | 6 | 8) && inner.chars().all(|c| c.is_ascii_hexdigit())
 }
 
-/// Draw the gradient bar in place: BAR_HEIGHT rows, each BAR_WIDTH cells wide,
-/// indented by MARGIN, with a hue rotation applied across the bar.
 fn draw_gradient_bar(hue_offset: f64) {
     for _ in 0..BAR_HEIGHT {
         print!("{}", MARGIN);
@@ -89,13 +86,11 @@ fn draw_gradient_bar(hue_offset: f64) {
 
 pub fn show_splash() {
     let theme = get_theme();
-    let (subtle, dim, rule, _syn_cmd, _syn_digit) = body_colors(theme);
+    let (subtle, dim, rule, syn_cmd, _syn_digit) = body_colors(theme);
     let is_tty = atty::is(atty::Stream::Stdout);
 
-    // Margin
     println!();
 
-    // Wordmark - 5 rows for CHROMIX
     let colors = wordmark_colors(theme);
     let wordmark_rows = [
         " ██████╗██╗  ██╗██████╗  ██████╗ ███╗   ███╗██╗██╗  ██╗",
@@ -107,15 +102,15 @@ pub fn show_splash() {
 
     for (i, row) in wordmark_rows.iter().enumerate() {
         let rgb = colors[i % colors.len()];
-        println!("{}{}\x1b[38;2;{};{};{}m{}\x1b[0m", MARGIN, BOLD, rgb.0, rgb.1, rgb.2, row);
+        println!(
+            "{}{}\x1b[38;2;{};{};{}m{}\x1b[0m",
+            MARGIN, BOLD, rgb.0, rgb.1, rgb.2, row
+        );
     }
 
-    // Blank
     println!();
 
-    // Gradient bar (fixed BAR_WIDTH x BAR_HEIGHT, indented by MARGIN)
     if is_tty {
-        // Animation loop
         for frame in 0..=FRAMES {
             let t = frame as f64 / FRAMES as f64;
             let eased = 1.0 - (1.0 - t).powi(3);
@@ -126,32 +121,41 @@ pub fn show_splash() {
 
             thread::sleep(Duration::from_millis(28));
 
-            // Move cursor back up to redraw the bar in place (except after the last frame)
             if frame < FRAMES {
                 print!("\x1b[{}A", BAR_HEIGHT);
             }
         }
     } else {
-        // Static draw
         draw_gradient_bar(0.0);
     }
 
-    // Blank
     println!();
 
-    // Description lines
-    println!("{}OKLCH color tool right in your terminal.{}", MARGIN, dim);
-    println!("{}Generate OKLCH color scale and convert hex to OKLCH.{}", MARGIN, dim);
+    println!(
+        "{}{}OKLCH color tool right in your terminal.{}",
+        MARGIN, subtle, RESET
+    );
+    println!(
+        "{}{}Generate OKLCH color scale and convert hex to OKLCH.{}",
+        MARGIN, dim, RESET
+    );
+    println!();
+    println!(
+        "{}{}v{}  by Iman Nazri{}",
+        MARGIN,
+        dim,
+        env!("CARGO_PKG_VERSION"),
+        RESET
+    );
+    println!();
 
-    // Rule
     print!("{}{}", MARGIN, rule);
     for _ in 0..48 {
         print!("─");
     }
     println!("\x1b[0m");
 
-    // HOW TO USE
-    println!("{}{}{} ", MARGIN, subtle, BOLD);
+    println!("{}{}{}HOW TO USE{}", MARGIN, subtle, BOLD, RESET);
     println!();
 
     // Examples
@@ -162,59 +166,45 @@ pub fn show_splash() {
     ];
 
     for ex in &examples {
-        let mut line = String::new();
-        let mut current_word = String::new();
+        let (code, comment) = match ex.find('#') {
+            Some(pos) => (&ex[..pos], Some(&ex[pos..])),
+            None => (*ex, None),
+        };
 
-        for ch in ex.chars() {
-            if ch == ' ' {
-                if !current_word.is_empty() {
-                    if current_word == "chromix" || matches!(current_word.as_str(), "convert" | "scale" | "export") {
-                        line.push_str(SYN_SUB);
-                        line.push_str(&current_word);
-                        line.push_str(RESET);
-                    } else if current_word.starts_with("--") {
-                        line.push_str(SYN_FLAG);
-                        line.push_str(&current_word);
-                        line.push_str(RESET);
-                    } else if is_hex_value(&current_word) {
-                        line.push_str(SYN_STR);
-                        line.push_str(&current_word);
-                        line.push_str(RESET);
-                    } else {
-                        line.push_str(&current_word);
-                    }
-                    line.push(' ');
-                    current_word.clear();
-                } else {
-                    line.push(ch);
-                }
-            } else if ch == '#' {
-                // Start of comment - output remaining as-is
-                line.push(ch);
-                // Continue reading the rest of the comment
-                break;
+        let mut line = String::new();
+        for word in code.split_whitespace() {
+            if !line.is_empty() {
+                line.push(' ');
+            }
+            if word == "chromix" {
+                line.push_str(&syn_cmd);
+                line.push_str(BOLD);
+                line.push_str(word);
+                line.push_str(RESET);
+            } else if matches!(word, "convert" | "scale" | "export") {
+                line.push_str(SYN_SUB);
+                line.push_str(word);
+                line.push_str(RESET);
+            } else if word.starts_with("--") {
+                line.push_str(SYN_FLAG);
+                line.push_str(word);
+                line.push_str(RESET);
+            } else if is_hex_value(word) {
+                line.push_str(SYN_STR);
+                line.push_str(word);
+                line.push_str(RESET);
             } else {
-                current_word.push(ch);
+                line.push_str(&dim);
+                line.push_str(word);
+                line.push_str(RESET);
             }
         }
 
-        // Handle any remaining word (for non-comment parts)
-        if !current_word.is_empty() {
-            if current_word == "chromix" || matches!(current_word.as_str(), "convert" | "scale" | "export") {
-                line.push_str(SYN_SUB);
-                line.push_str(&current_word);
-                line.push_str(RESET);
-            } else if current_word.starts_with("--") {
-                line.push_str(SYN_FLAG);
-                line.push_str(&current_word);
-                line.push_str(RESET);
-            } else if is_hex_value(&current_word) {
-                line.push_str(SYN_STR);
-                line.push_str(&current_word);
-                line.push_str(RESET);
-            } else {
-                line.push_str(&current_word);
-            }
+        if let Some(c) = comment {
+            line.push_str("  ");
+            line.push_str(&dim);
+            line.push_str(c);
+            line.push_str(RESET);
         }
 
         println!("{} {}", MARGIN, line);
@@ -223,6 +213,9 @@ pub fn show_splash() {
     println!();
 
     // Footer
-    println!("{}Run `chromix --help` for all options.{}", MARGIN, dim);
+    println!(
+        "{}{}Run `chromix --help` for all options.{}",
+        MARGIN, dim, RESET
+    );
     println!();
 }

@@ -54,20 +54,30 @@ pub struct Wcag {
 const WHITE: Srgb = Srgb::new(255, 255, 255);
 const BLACK: Srgb = Srgb::new(0, 0, 0);
 
-/// Compute relative luminance per WCAG
 fn relative_luminance(srgb: Srgb) -> f64 {
     let r = srgb.r as f64 / 255.0;
     let g = srgb.g as f64 / 255.0;
     let b = srgb.b as f64 / 255.0;
 
-    let r_lin = if r <= 0.03928 { r / 12.92 } else { ((r + 0.055) / 1.055).powf(2.4) };
-    let g_lin = if g <= 0.03928 { g / 12.92 } else { ((g + 0.055) / 1.055).powf(2.4) };
-    let b_lin = if b <= 0.03928 { b / 12.92 } else { ((b + 0.055) / 1.055).powf(2.4) };
+    let r_lin = if r <= 0.03928 {
+        r / 12.92
+    } else {
+        ((r + 0.055) / 1.055).powf(2.4)
+    };
+    let g_lin = if g <= 0.03928 {
+        g / 12.92
+    } else {
+        ((g + 0.055) / 1.055).powf(2.4)
+    };
+    let b_lin = if b <= 0.03928 {
+        b / 12.92
+    } else {
+        ((b + 0.055) / 1.055).powf(2.4)
+    };
 
     0.2126 * r_lin + 0.7152 * g_lin + 0.0722 * b_lin
 }
 
-/// Compute contrast ratio
 pub fn contrast_ratio(a: Srgb, b: Srgb) -> f64 {
     let l1 = relative_luminance(a);
     let l2 = relative_luminance(b);
@@ -75,13 +85,11 @@ pub fn contrast_ratio(a: Srgb, b: Srgb) -> f64 {
     (hi + 0.05) / (lo + 0.05)
 }
 
-/// Analyze a swatch's WCAG compliance
 pub fn analyze(swatch: Srgb) -> Wcag {
     let vs_white = contrast_ratio(swatch, WHITE);
     let vs_black = contrast_ratio(swatch, BLACK);
 
     if vs_white >= AAA_NORMAL_TEXT {
-        // Dark enough for white background
         Wcag {
             usage: Usage::Text,
             rating: Rating::Aaa,
@@ -98,7 +106,6 @@ pub fn analyze(swatch: Srgb) -> Wcag {
             vs_black,
         }
     } else if vs_white >= AA_LARGE_OR_UI {
-        // Usable for borders on white
         Wcag {
             usage: Usage::Border,
             rating: Rating::Aa,
@@ -107,12 +114,7 @@ pub fn analyze(swatch: Srgb) -> Wcag {
             vs_black,
         }
     } else {
-        // Too light for white, check black
-        let on = if vs_black >= vs_white {
-            BLACK
-        } else {
-            WHITE
-        };
+        let on = if vs_black >= vs_white { BLACK } else { WHITE };
         let on_contrast = if vs_black >= vs_white {
             vs_black
         } else {

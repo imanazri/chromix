@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.svg" alt="Chromix — OKLCH color tool, right in your terminal" width="720">
+</p>
+
 # Chromix
 
 OKLCH color tool right in your terminal.

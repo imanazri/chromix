@@ -9,6 +9,7 @@ v0.1.0 by Iman Nazri
 
 ## Install
 
+Linux & MacOS
 ```
 curl -fsSL https://raw.githubusercontent.com/imanazri/chromix/main/install.sh | sh
 ```

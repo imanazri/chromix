@@ -1,0 +1,10 @@
+/Users/imannazri/Documents/Coding/Side Projects/25 - Chromix (Laguna)/target/debug/deps/coolor-0068984ba015ebd0.d: /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/lib.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/ansi.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/color.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/error.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/hsl.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/rgb.rs
+
+/Users/imannazri/Documents/Coding/Side Projects/25 - Chromix (Laguna)/target/debug/deps/libcoolor-0068984ba015ebd0.rmeta: /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/lib.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/ansi.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/color.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/error.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/hsl.rs /Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/rgb.rs
+
+/Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/lib.rs:
+/Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/ansi.rs:
+/Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/color.rs:
+/Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/error.rs:
+/Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/hsl.rs:
+/Users/imannazri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/coolor-1.1.0/src/rgb.rs:

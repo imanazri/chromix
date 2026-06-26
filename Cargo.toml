@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["crates/chromix-core", "crates/chromix-cli"]

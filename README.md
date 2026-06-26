@@ -1,13 +1,13 @@
 # Chromix
 
 OKLCH color tool right in your terminal.
-Generate OKLCH color scale and convert hex to OKLCH.
+Generate OKLCH color scale and convert hex to OKLCH. 
+
+Note: This is a fun tool I've built to test out Poolside's Laguna model. 
 
 v0.1.0 by Iman Nazri
 
 ## Install
-
-No Rust required. The install script detects your platform and installs the latest binary (macOS and Linux).
 
 ```
 curl -fsSL https://raw.githubusercontent.com/imanazri/chromix/main/install.sh | sh

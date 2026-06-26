@@ -65,7 +65,6 @@ impl Srgb {
     pub fn from_hex(s: &str) -> Result<Self, ParseHexError> {
         let s = s.strip_prefix('#').unwrap_or(s);
 
-        // Check for bad digit first (before length check)
         for ch in s.chars() {
             if !ch.is_ascii_hexdigit() {
                 return Err(ParseHexError::BadDigit(ch));
@@ -74,14 +73,12 @@ impl Srgb {
 
         let (r, g, b) = match s.len() {
             3 | 4 => {
-                // Shorthand: double each digit, ignore alpha (4th digit)
                 let r = (s.as_bytes()[0] as char).to_digit(16).unwrap() as u8 * 17;
                 let g = (s.as_bytes()[1] as char).to_digit(16).unwrap() as u8 * 17;
                 let b = (s.as_bytes()[2] as char).to_digit(16).unwrap() as u8 * 17;
                 (r, g, b)
             }
             6 | 8 => {
-                // Full form, ignore alpha (8th digit)
                 let r = u8::from_str_radix(&s[0..2], 16).unwrap();
                 let g = u8::from_str_radix(&s[2..4], 16).unwrap();
                 let b = u8::from_str_radix(&s[4..6], 16).unwrap();

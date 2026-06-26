@@ -43,7 +43,11 @@ pub fn generate_ramp_with_steps(base: Oklch, steps: &[u16]) -> Ramp {
 
     for (i, &step) in steps.iter().enumerate() {
         let l = target_lightness(step, i, n);
-        let t = if n > 1 { i as f64 / (n - 1) as f64 } else { 0.5 };
+        let t = if n > 1 {
+            i as f64 / (n - 1) as f64
+        } else {
+            0.5
+        };
         let taper = 1.0 - (2.0 * t - 1.0).powi(2) * 0.5;
         let chroma = base.c * taper;
 
@@ -64,15 +68,17 @@ pub fn generate_ramp_with_steps(base: Oklch, steps: &[u16]) -> Ramp {
 }
 
 fn target_lightness(step: u16, index: usize, count: usize) -> f64 {
-    // Check if step is in the tuned table
     for &(s, l) in &TUNED_LIGHTNESS {
         if s == step {
             return l;
         }
     }
 
-    // Positional interpolation for non-default steps
-    let t = if count > 1 { index as f64 / (count - 1) as f64 } else { 0.5 };
+    let t = if count > 1 {
+        index as f64 / (count - 1) as f64
+    } else {
+        0.5
+    };
     LIGHTEST + (DARKEST - LIGHTEST) * t
 }
 

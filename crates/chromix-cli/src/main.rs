@@ -1,5 +1,5 @@
-use chromix_core::{generate_ramp, generate_ramp_with_steps, Oklch};
 use chromix_cli::{cli, render, splash};
+use chromix_core::{generate_ramp, generate_ramp_with_steps, Oklch};
 use clap::Parser;
 use std::process::ExitCode;
 
@@ -24,8 +24,6 @@ fn handle_convert(args: &cli::ConvertArgs) -> ExitCode {
         Ok(oklch) => {
             let copied = if args.copy {
                 if copy_to_clipboard(&oklch.to_css()) {
-                    println!();
-                    println!("  copied to clipboard");
                     true
                 } else {
                     eprintln!("  warning: failed to copy to clipboard");

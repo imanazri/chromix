@@ -1,6 +1,5 @@
 use super::{Oklch, Srgb};
 
-/// Convert sRGB (gamma-corrected) to linear sRGB
 fn srgb_to_linear(c: f64) -> f64 {
     if c <= 0.04045 {
         c / 12.92
@@ -9,7 +8,6 @@ fn srgb_to_linear(c: f64) -> f64 {
     }
 }
 
-/// Convert linear sRGB to sRGB (gamma-corrected)
 fn linear_to_srgb(c: f64) -> f64 {
     if c <= 0.0031308 {
         c * 12.92
@@ -18,19 +16,15 @@ fn linear_to_srgb(c: f64) -> f64 {
     }
 }
 
-/// Convert linear sRGB to OKLab
 fn linear_srgb_to_oklab(r: f64, g: f64, b: f64) -> (f64, f64, f64) {
-    // LMS
     let l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
     let m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
     let s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
 
-    // Cube root
     let l_ = l.cbrt();
     let m_ = m.cbrt();
     let s_ = s.cbrt();
 
-    // OKLab
     #[allow(non_snake_case)]
     let L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
     let a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
@@ -39,7 +33,6 @@ fn linear_srgb_to_oklab(r: f64, g: f64, b: f64) -> (f64, f64, f64) {
     (L, a, b)
 }
 
-/// Convert OKLab to linear sRGB
 #[allow(non_snake_case)]
 fn oklab_to_linear_srgb(L: f64, a: f64, b: f64) -> (f64, f64, f64) {
     let l_ = L + 0.3963377774 * a + 0.2158037573 * b;
@@ -57,7 +50,6 @@ fn oklab_to_linear_srgb(L: f64, a: f64, b: f64) -> (f64, f64, f64) {
     (r, g, b)
 }
 
-/// Convert sRGB to OKLCH
 pub fn srgb_to_oklch(srgb: Srgb) -> Oklch {
     let r = srgb.r as f64 / 255.0;
     let g = srgb.g as f64 / 255.0;
@@ -76,7 +68,6 @@ pub fn srgb_to_oklch(srgb: Srgb) -> Oklch {
     Oklch::new(l, c, h)
 }
 
-/// Convert OKLCH to sRGB (with clamping)
 pub fn oklch_to_srgb(oklch: Oklch) -> Srgb {
     let h_rad = oklch.h.to_radians();
     let a = oklch.c * h_rad.cos();
@@ -90,7 +81,6 @@ pub fn oklch_to_srgb(oklch: Oklch) -> Srgb {
     Srgb::new(r.round() as u8, g.round() as u8, b.round() as u8)
 }
 
-/// Convert OKLCH to linear sRGB (unclamped)
 pub fn oklch_to_linear_srgb(oklch: Oklch) -> (f64, f64, f64) {
     let h_rad = oklch.h.to_radians();
     let a = oklch.c * h_rad.cos();
@@ -107,7 +97,6 @@ mod tests {
         for v in [0.0, 0.01, 0.04045, 0.1, 0.5, 1.0] {
             let linear = srgb_to_linear(v);
             let back = linear_to_srgb(linear);
-            // Allow small tolerance for floating point
             assert!((v - back).abs() < 1e-6, "roundtrip failed for v={}", v);
         }
     }
@@ -115,19 +104,24 @@ mod tests {
     #[test]
     fn test_roundtrip_known_colors() {
         let colors = [
-            Srgb::new(0x3b, 0x82, 0xf6), // Tailwind blue-500
-            Srgb::new(0xef, 0x44, 0x44), // Tailwind red-500
-            Srgb::new(0x10, 0xb9, 0x81), // Tailwind green-500
-            Srgb::new(0x00, 0x00, 0x00), // Black
-            Srgb::new(0xff, 0xff, 0xff), // White
-            Srgb::new(0x80, 0x80, 0x80), // Gray
+            Srgb::new(0x3b, 0x82, 0xf6),
+            Srgb::new(0xef, 0x44, 0x44),
+            Srgb::new(0x10, 0xb9, 0x81),
+            Srgb::new(0x00, 0x00, 0x00),
+            Srgb::new(0xff, 0xff, 0xff),
+            Srgb::new(0x80, 0x80, 0x80),
         ];
 
         for original in colors {
             let oklch = original.to_oklch();
             let back = oklch.to_srgb();
-            // Allow ±2 per channel tolerance due to floating point and gamut handling
-            assert!((original.r as i16 - back.r as i16).abs() <= 2, "roundtrip failed for {:?}: original={:?}, back={:?}", original, oklch, back);
+            assert!(
+                (original.r as i16 - back.r as i16).abs() <= 2,
+                "roundtrip failed for {:?}: original={:?}, back={:?}",
+                original,
+                oklch,
+                back
+            );
             assert!((original.g as i16 - back.g as i16).abs() <= 2);
             assert!((original.b as i16 - back.b as i16).abs() <= 2);
         }
@@ -137,20 +131,37 @@ mod tests {
     fn test_known_value_blue_500() {
         let srgb = Srgb::new(0x3b, 0x82, 0xf6);
         let oklch = srgb.to_oklch();
-        // l≈0.623, c≈0.188, h≈259.8
-        assert!((oklch.l - 0.623).abs() < 0.05, "L={}, expected ~0.623", oklch.l);
-        assert!((oklch.c - 0.188).abs() < 0.05, "C={}, expected ~0.188", oklch.c);
-        assert!((oklch.h - 259.8).abs() < 10.0, "H={}, expected ~259.8", oklch.h);
+        assert!(
+            (oklch.l - 0.623).abs() < 0.05,
+            "L={}, expected ~0.623",
+            oklch.l
+        );
+        assert!(
+            (oklch.c - 0.188).abs() < 0.05,
+            "C={}, expected ~0.188",
+            oklch.c
+        );
+        assert!(
+            (oklch.h - 259.8).abs() < 10.0,
+            "H={}, expected ~259.8",
+            oklch.h
+        );
     }
 
     #[test]
     fn test_extremes() {
-        // White should have L≈1.0
         let white_oklch = Srgb::new(0xff, 0xff, 0xff).to_oklch();
-        assert!((white_oklch.l - 1.0).abs() < 0.05, "white L={}", white_oklch.l);
+        assert!(
+            (white_oklch.l - 1.0).abs() < 0.05,
+            "white L={}",
+            white_oklch.l
+        );
 
-        // Black should have L≈0.0
         let black_oklch = Srgb::new(0x00, 0x00, 0x00).to_oklch();
-        assert!((black_oklch.l - 0.0).abs() < 0.05, "black L={}", black_oklch.l);
+        assert!(
+            (black_oklch.l - 0.0).abs() < 0.05,
+            "black L={}",
+            black_oklch.l
+        );
     }
 }

@@ -1,0 +1,6 @@
+/target
+
+# Stray export artifacts produced by `chromix export`
+/colors.css
+/colors.json
+/tailwind.colors.js

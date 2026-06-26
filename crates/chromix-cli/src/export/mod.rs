@@ -3,9 +3,9 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
+pub mod css;
 pub mod json;
 pub mod tailwind;
-pub mod css;
 
 pub fn export(
     json: bool,

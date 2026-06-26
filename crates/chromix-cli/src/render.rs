@@ -1,7 +1,6 @@
 use chromix_core::{Oklch, Ramp};
 use owo_colors::{OwoColorize, Rgb};
 
-// Grayscale palette
 const HEADER: Rgb = Rgb(235, 235, 235);
 const LABEL: Rgb = Rgb(200, 200, 200);
 const DIM: Rgb = Rgb(130, 130, 130);
@@ -12,31 +11,22 @@ pub fn render_color(oklch: Oklch, copied: bool) {
     let hex = srgb.to_hex();
     let oklch_str = oklch.to_css();
 
-    let ok_green = OK_GREEN;
+    println!();
+    println!("  {} converted to OKLCH", "✓".color(OK_GREEN).bold());
+    println!();
 
-    println!();
-    print!("  {} converted to OKLCH", "✓".color(ok_green).bold());
-    println!(
-        "{}",
-        format!("  {}", oklch_str).color(HEADER)
-    );
-    println!();
-    
-    // Swatch with background
-    print!("      ");
-    print!("\x1b[48;2;{};{};{}m", srgb.r, srgb.g, srgb.b);
-    print!(" ");
-    print!("\x1b[0m");
-    
     print!("  ");
-    print!("{}", oklch_str.color(HEADER));
+    print!("\x1b[48;2;{};{};{}m      \x1b[0m", srgb.r, srgb.g, srgb.b);
+    print!("  {}", oklch_str.color(HEADER).bold());
     if copied {
-        print!(" {} ", "📋".color(ok_green));
+        print!(" {}", "📋".color(OK_GREEN));
     }
-    println!("| {}", hex.color(DIM));
+    print!("  | {}", hex.color(DIM));
+    println!();
+
     if copied {
         println!();
-        println!("{} copied to clipboard", " ".repeat(2).color(DIM));
+        println!("  {}", "copied to clipboard".color(DIM));
     }
     println!();
 }
@@ -46,13 +36,10 @@ pub fn render_input_header(oklch: Oklch) {
     let hex = srgb.to_hex();
 
     println!();
-    print!("      ");
-    print!("\x1b[48;2;{};{};{}m", srgb.r, srgb.g, srgb.b);
-    print!(" ");
-    print!("\x1b[0m");
-    print!("  input ");
-    print!("{}", hex.color(LABEL));
-    println!();
+    print!("  ");
+    print!("\x1b[48;2;{};{};{}m      \x1b[0m", srgb.r, srgb.g, srgb.b);
+    print!("  {}  ", "input".color(DIM));
+    println!("{}", hex.color(LABEL));
 }
 
 pub fn render_ramp(name: &str, ramp: &Ramp) {
@@ -65,18 +52,19 @@ pub fn render_ramp(name: &str, ramp: &Ramp) {
     println!();
 
     for entry in &ramp.entries {
-        // Swatch with background
-        print!("      ");
-        print!("\x1b[48;2;{};{};{}m", entry.srgb.r, entry.srgb.g, entry.srgb.b);
-        print!(" ");
-        print!("\x1b[0m");
-        
+        print!("  ");
+        print!(
+            "\x1b[48;2;{};{};{}m      \x1b[0m",
+            entry.srgb.r, entry.srgb.g, entry.srgb.b
+        );
+
         let step_str = format!("{:>4}", entry.step);
+        let oklch_str = format!("{:<24}", entry.oklch.to_css());
 
         println!(
-            " {} {}   | {}",
+            " {}  {}  {}",
             step_str.color(LABEL),
-            entry.oklch.to_css().color(LABEL),
+            oklch_str.color(LABEL),
             entry.hex.color(DIM)
         );
     }

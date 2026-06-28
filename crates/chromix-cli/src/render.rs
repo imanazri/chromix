@@ -78,12 +78,106 @@ pub fn render_ramp(name: &str, ramp: &Ramp) {
     }
 
     println!();
+}
+
+/// Greedily word-wrap `text` into lines no wider than `width` columns.
+fn wrap(text: &str, width: usize) -> Vec<String> {
+    let mut lines = Vec::new();
+    let mut line = String::new();
+
+    for word in text.split_whitespace() {
+        if line.is_empty() {
+            line.push_str(word);
+        } else if line.chars().count() + 1 + word.chars().count() <= width {
+            line.push(' ');
+            line.push_str(word);
+        } else {
+            lines.push(std::mem::take(&mut line));
+            line.push_str(word);
+        }
+    }
+
+    if !line.is_empty() {
+        lines.push(line);
+    }
+
+    lines
+}
+
+/// Width to wrap prose content in a prompt box.
+const PROMPT_WRAP_WIDTH: usize = 56;
+
+/// Render a selection-clean "Copy Prompt" box from already-built plain-text lines.
+///
+/// Framed by a titled top rule and a bottom rule with **no `│` side borders**, so a
+/// manual drag-select over the content copies clean, paste-ready text — the
+/// box-drawing characters sit on their own lines and are never caught in the
+/// selection.
+fn render_prompt_box(title: &str, lines: &[String]) {
+    const MARGIN: &str = "  ";
+
+    // Rules span the widest content line, with a floor and room for the title.
+    let rule_width = lines
+        .iter()
+        .map(|l| l.chars().count())
+        .chain(std::iter::once(title.chars().count() + 4))
+        .max()
+        .unwrap_or(0)
+        .max(44);
+
+    // Titled top rule: "── <title> ──────…" filled to rule_width.
+    let title_fill = rule_width.saturating_sub(title.chars().count() + 4);
+    println!();
     println!(
-        "{} {}",
-        "Tips:".color(HEADER).bold(),
-        "use chromix export to export as json".color(DIM)
+        "{MARGIN}{} {} {}",
+        "──".color(DIM),
+        title.color(LABEL),
+        "─".repeat(title_fill).color(DIM)
     );
     println!();
+
+    // Content lines: plain colored text, no side borders, so a drag-select copies
+    // clean prompt text.
+    for line in lines {
+        println!("{MARGIN}{}", line.color(LABEL));
+    }
+
+    // Plain bottom rule.
+    println!();
+    println!("{MARGIN}{}", "─".repeat(rule_width).color(DIM));
+    println!();
+}
+
+/// Render a ready-to-paste prompt for AI coding agents after a color scale.
+///
+/// The content is dynamic: it embeds the scale `name` and each step's OKLCH value,
+/// emitted as a Tailwind v4 `@theme` color-token block.
+pub fn render_agent_prompt(name: &str, ramp: &Ramp) {
+    let intro = format!(
+        "Add this OKLCH color scale to my Tailwind theme as \"{name}\" color tokens \
+         (v4 @theme; for v3, nest these under theme.extend.colors.{name}). Keep the \
+         OKLCH values as the source of truth:"
+    );
+    // Align the OKLCH column: pad each token key to the widest "--color-{name}-{step}:".
+    let key_width = ramp
+        .entries
+        .iter()
+        .map(|e| format!("--color-{name}-{}:", e.step).chars().count())
+        .max()
+        .unwrap_or(0);
+
+    // Build the plain-text content lines (no color yet) as a Tailwind @theme block.
+    let mut lines: Vec<String> = Vec::new();
+    lines.extend(wrap(&intro, PROMPT_WRAP_WIDTH));
+    lines.push(String::new());
+    lines.push("@theme {".to_string());
+    for entry in &ramp.entries {
+        let key = format!("--color-{name}-{}:", entry.step);
+        lines.push(format!("  {key:<key_width$} {};", entry.oklch.to_css()));
+    }
+    lines.push("}".to_string());
+
+    render_prompt_box("Copy Prompt", &lines);
 }
 
 fn variant_label(kind: GradientKind) -> &'static str {
@@ -168,4 +262,45 @@ pub fn render_gradient(base: Oklch, pairs: &[(Gradient, Gradient)]) {
     for (_, dark) in pairs {
         render_band(dark);
     }
+
+    render_gradient_prompt(pairs);
+}
+
+/// Build the `<prefix>from-/via-/to-[…]` Tailwind classes for one gradient's
+/// start / midpoint / end stops. Arbitrary OKLCH values can't contain spaces, so
+/// each is converted with `to_css().replace(' ', "_")`.
+fn tw_stops(prefix: &str, gradient: &Gradient) -> String {
+    let stops = &gradient.stops;
+    let pick = [&stops[0], &stops[stops.len() / 2], &stops[stops.len() - 1]];
+    ["from", "via", "to"]
+        .iter()
+        .zip(pick)
+        .map(|(util, stop)| format!("{prefix}{util}-[{}]", stop.oklch.to_css().replace(' ', "_")))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// Render a ready-to-paste prompt for AI coding agents after a gradient.
+///
+/// One block per kind, each a single drop-in Tailwind className covering light by
+/// default and dark under the `dark:` variant — so a developer copies one line and
+/// gets a complete light + dark gradient.
+fn render_gradient_prompt(pairs: &[(Gradient, Gradient)]) {
+    let intro = "Use these OKLCH gradients as Tailwind background gradients (v4 \
+                 bg-linear-to-r; v3 bg-gradient-to-r). Each className covers light by \
+                 default and dark under the dark: variant — drop one onto an element:";
+
+    let mut lines: Vec<String> = Vec::new();
+    lines.extend(wrap(intro, PROMPT_WRAP_WIDTH));
+    lines.push(String::new());
+    for (light, dark) in pairs {
+        lines.push(variant_label(light.kind).to_string());
+        lines.push(format!(
+            "  bg-linear-to-r {} {}",
+            tw_stops("", light),
+            tw_stops("dark:", dark)
+        ));
+    }
+
+    render_prompt_box("Copy Prompt", &lines);
 }

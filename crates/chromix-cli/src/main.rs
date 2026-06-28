@@ -84,6 +84,7 @@ fn handle_scale(args: &cli::ScaleArgs) -> ExitCode {
             };
             render::render_input_header(base);
             render::render_ramp(&args.name, &ramp);
+            render::render_agent_prompt(&args.name, &ramp);
             ExitCode::SUCCESS
         }
         Err(e) => {

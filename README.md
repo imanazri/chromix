@@ -5,7 +5,7 @@ Generate OKLCH color scale and convert hex to OKLCH.
 
 Note: This is a fun tool I've built to test out Poolside's Laguna model. 
 
-v0.1.0 by Iman Nazri
+v0.2.0 by Iman Nazri
 
 ## Install
 

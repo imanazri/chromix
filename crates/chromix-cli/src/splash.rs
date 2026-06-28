@@ -163,6 +163,7 @@ pub fn show_splash() {
         "chromix convert 3b82f6 # convert a color to OKLCH",
         "chromix scale 3b82f6  # print an 11-step OKLCH ramp",
         "chromix export 3b82f6 --json --css  # write the selected token files",
+        "chromix gradient 3b82f6  # blend a color into an OKLCH band",
     ];
 
     for ex in &examples {
@@ -181,7 +182,7 @@ pub fn show_splash() {
                 line.push_str(BOLD);
                 line.push_str(word);
                 line.push_str(RESET);
-            } else if matches!(word, "convert" | "scale" | "export") {
+            } else if matches!(word, "convert" | "scale" | "export" | "gradient") {
                 line.push_str(SYN_SUB);
                 line.push_str(word);
                 line.push_str(RESET);

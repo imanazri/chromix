@@ -1,5 +1,7 @@
 use chromix_cli::{cli, render, splash};
-use chromix_core::{generate_ramp, generate_ramp_with_steps, Oklch};
+use chromix_core::{
+    generate_gradient, generate_ramp, generate_ramp_with_steps, Appearance, GradientKind, Oklch,
+};
 use clap::Parser;
 use std::process::ExitCode;
 
@@ -15,7 +17,33 @@ fn main() -> ExitCode {
             cli::Commands::Convert(args) => handle_convert(&args),
             cli::Commands::Scale(args) => handle_scale(&args),
             cli::Commands::Export(args) => handle_export(&args),
+            cli::Commands::Gradient(args) => handle_gradient(&args),
         },
+    }
+}
+
+fn handle_gradient(args: &cli::GradientArgs) -> ExitCode {
+    match Oklch::from_hex(&args.color_arg.color) {
+        Ok(base) => {
+            let w = render::GRADIENT_WIDTH;
+            let pairs = [
+                GradientKind::Analogous,
+                GradientKind::Complementary,
+                GradientKind::Monochromatic,
+            ]
+            .map(|kind| {
+                (
+                    generate_gradient(base, kind, Appearance::Light, w),
+                    generate_gradient(base, kind, Appearance::Dark, w),
+                )
+            });
+            render::render_gradient(base, &pairs);
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("error: invalid color '{}': {}", args.color_arg.color, e);
+            ExitCode::FAILURE
+        }
     }
 }
 

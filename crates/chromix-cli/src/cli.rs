@@ -16,6 +16,14 @@ pub enum Commands {
     Scale(ScaleArgs),
     /// Export color tokens to files
     Export(ExportArgs),
+    /// Blend a color into an OKLCH gradient band
+    Gradient(GradientArgs),
+}
+
+#[derive(Args)]
+pub struct GradientArgs {
+    #[command(flatten)]
+    pub color_arg: ColorArg,
 }
 
 #[derive(Args)]

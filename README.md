@@ -41,6 +41,19 @@ chromix scale 3b82f6 --steps 100,300,500,700,900
 chromix scale 3b82f6 --name brand
 ```
 
+### Generate a gradient
+
+Blend a color into smooth OKLCH gradient bands. A single command renders all
+three variants — `analogous` (adjacent hues ±30°), `complementary` (base hue
+blended to its +180° complement), and `monochromatic` (single hue, lightness
+sweep). The output is split into a **light mode** section (darker tuning, for
+light backgrounds) and a **dark mode** section (lighter tuning, for dark
+backgrounds); each variant lists its start and end OKLCH values for copy-paste.
+
+```
+chromix gradient 3b82f6
+```
+
 ### Export design tokens
 
 At least one format flag is required.
